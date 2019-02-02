@@ -13,7 +13,7 @@ public Plugin myinfo = {
 	name = "Restart",
 	author = "B3none",
 	description = "Restarts servers once a day when they empty.",
-	version = "1.1.1",
+	version = "1.1.2",
 	url = "https://github.com/b3none",
 }
 
