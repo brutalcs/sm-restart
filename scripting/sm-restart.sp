@@ -47,6 +47,9 @@ public Action CheckRestart(Handle timer, bool ignore)
 
 	int lastRestart = GetFileTime(path, FileTime_LastChange);
 	char lastRestartDay[8] = "";
+	
+	PrintToChatAll("%i", lastRestart);
+	PrintToChatAll("%s", lastRestartDay);
 
 	if(lastRestart != -1)
 	{
@@ -55,6 +58,7 @@ public Action CheckRestart(Handle timer, bool ignore)
 
 	if(StrEqual(currentDay, lastRestartDay))
 	{
+		PrintToChatAll("The server not restarting because current day is the same as the last restart day.");
 		return;
 	}
 
@@ -63,10 +67,14 @@ public Action CheckRestart(Handle timer, bool ignore)
 
 	if(!IsServerEmpty() && StringToInt(time) == GetConVarInt(cvarBackupTime))
 	{
+		PrintToChatAll("Using backup time");
+		
 		PrintToChatAll("%s The server is restarting.", MESSAGE_PREFIX);
 	}
 	else if(StringToInt(time) < GetConVarInt(cvarTime)) 
 	{
+		PrintToChatAll("The server not restarting because current time is less than the set restart time.");
+		
 		return;
 	}
 
@@ -75,14 +83,16 @@ public Action CheckRestart(Handle timer, bool ignore)
 	bool written = false;
 
 	written = WriteFileString(file, "Don't touch this file", true);
-	delete file;
 
 	// Don't restart endlessly if we couldn't...
 	if(file == INVALID_HANDLE || !written)
 	{
 		LogError("Couldn't write %s.", path);
+		
 		return;
 	}
+	
+	delete file;
 
 	RestartServer();
 }
