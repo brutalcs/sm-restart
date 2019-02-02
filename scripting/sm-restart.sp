@@ -5,10 +5,11 @@
 
 Handle cvarEnabled = INVALID_HANDLE;
 Handle cvarTime = INVALID_HANDLE;
+Handle cvarBackupTime = INVALID_HANDLE;
 
 public Plugin myinfo = {
-	name = "AutoRestart",
-	author = "B3none, MikeJS",
+	name = "Restart",
+	author = "B3none",
 	description = "Restarts servers once a day when they empty.",
 	version = "1.0.0",
 	url = "https://github.com/b3none",
@@ -17,6 +18,12 @@ public Plugin myinfo = {
 public void OnPluginStart() {
 	cvarEnabled = CreateConVar("sm_autorestart", "1", "Enable AutoRestart.");
 	cvarTime = CreateConVar("sm_autorestart_time", "0500", "Time to restart server at.", _, true, 0.0, true, 2400.0);
+	cvarBackupTime = CreateConVar("sm_autorestart_time_backup", "1400", "Backup time to restart server at (Must be more than cvarTime).", _, true, 0.0, true, 2400.0);
+	
+	if(GetConVarInt(cvarBackupTime) < GetConVarInt(cvarTime))
+	{
+		ThrowError("The backup restart time cannot be less than the restart time.");
+	}
 
 	CreateTimer(300.0, CheckRestart, 0, TIMER_REPEAT);
 }
@@ -27,15 +34,6 @@ public Action CheckRestart(Handle timer, bool ignore) {
 		return;
 	}
 
-	// Is the server empty?
-	for(int i = 1; i <= MaxClients; i++) 
-	{
-		if(IsClientConnected(i) && !IsFakeClient(i)) 
-		{
-			return;
-		}
-	}
-
 	char path[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, path, sizeof(path), "data/lastrestart.txt");
 
@@ -43,7 +41,7 @@ public Action CheckRestart(Handle timer, bool ignore) {
 	char currentDay[8];
 	FormatTime(currentDay, sizeof(currentDay), "%j");
 
-	new const lastRestart = GetFileTime( path, FileTime_LastChange );
+	int lastRestart = GetFileTime(path, FileTime_LastChange);
 	char lastRestartDay[8] = "";
 
 	if(lastRestart != -1)
@@ -59,8 +57,11 @@ public Action CheckRestart(Handle timer, bool ignore) {
 	char time[8];
 	FormatTime(time, sizeof(time), "%H%M");
 
-	// Is it too early to restart?
-	if(StringToInt(time) < GetConVarInt(cvarTime)) 
+	if(!IsServerEmpty() && StringToInt(time) == GetConVarInt(cvarBackupTime))
+	{
+		return;
+	}
+	else if(StringToInt(time) < GetConVarInt(cvarTime)) 
 	{
 		return;
 	}
@@ -68,16 +69,14 @@ public Action CheckRestart(Handle timer, bool ignore) {
 	// Touch autorestart.txt
 	Handle file = OpenFile(path, "w");
 	bool written = false;
-	bool closed = false;
 
-	if(file != INVALID_HANDLE)
-	{
-		written = WriteFileString(file, "Don't touch this file", true);
-		closed = CloseHandle(file);
-	}
+	delete file;
+	written = WriteFileString(file, "Don't touch this file", true);
+
 
 	// Don't restart endlessly if we couldn't...
-	if(file == INVALID_HANDLE || !written || !closed) {
+	if(file == INVALID_HANDLE || !written)
+	{
 		LogError("Couldn't write %s.", path);
 		return;
 	}
@@ -85,4 +84,23 @@ public Action CheckRestart(Handle timer, bool ignore) {
 	// All good
 	LogMessage("Restarting...");
 	ServerCommand("_restart");
+}
+
+stock bool IsServerEmpty()
+{
+	// Is the server empty?
+	for(int i = 1; i <= MaxClients; i++) 
+	{
+		if(IsValidClient(i)) 
+		{
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+stock bool IsValidClient(int client)
+{
+    return client > 0 && client <= MaxClients && IsClientInGame(client) && IsClientConnected(client) && IsClientAuthorized(client) && !IsFakeClient(client);
 }
