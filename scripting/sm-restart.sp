@@ -64,11 +64,12 @@ public Action CheckRestart(Handle timer, bool ignore)
 	char time[8];
 	FormatTime(time, sizeof(time), "%H%M");
 
+	
 	if(IsInRange(StringToInt(time), GetConVarInt(cvarBackupTime)))
 	{
 		PrintToChatAll("%s The server is restarting.", MESSAGE_PREFIX);
 	}
-	else if(!IsServerEmpty() || IsInRange(StringToInt(time), GetConVarInt(cvarTime))) 
+	else if(!IsServerEmpty() || !IsInRange(StringToInt(time), GetConVarInt(cvarTime))) 
 	{
 		return;
 	}
