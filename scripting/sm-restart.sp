@@ -3,6 +3,8 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+#define MESSAGE_PREFIX "[\x02Restart\x01]"
+
 Handle cvarEnabled = INVALID_HANDLE;
 Handle cvarTime = INVALID_HANDLE;
 Handle cvarBackupTime = INVALID_HANDLE;
@@ -11,11 +13,12 @@ public Plugin myinfo = {
 	name = "Restart",
 	author = "B3none",
 	description = "Restarts servers once a day when they empty.",
-	version = "1.0.0",
+	version = "1.1.0",
 	url = "https://github.com/b3none",
 }
 
-public void OnPluginStart() {
+public void OnPluginStart() 
+{
 	cvarEnabled = CreateConVar("sm_autorestart", "1", "Enable AutoRestart.");
 	cvarTime = CreateConVar("sm_autorestart_time", "0500", "Time to restart server at.", _, true, 0.0, true, 2400.0);
 	cvarBackupTime = CreateConVar("sm_autorestart_time_backup", "1400", "Backup time to restart server at (Must be more than cvarTime).", _, true, 0.0, true, 2400.0);
@@ -28,7 +31,8 @@ public void OnPluginStart() {
 	CreateTimer(300.0, CheckRestart, 0, TIMER_REPEAT);
 }
 
-public Action CheckRestart(Handle timer, bool ignore) {
+public Action CheckRestart(Handle timer, bool ignore) 
+{
 	if(!GetConVarBool(cvarEnabled)) 
 	{
 		return;
@@ -59,6 +63,7 @@ public Action CheckRestart(Handle timer, bool ignore) {
 
 	if(!IsServerEmpty() && StringToInt(time) == GetConVarInt(cvarBackupTime))
 	{
+		PrintToChatAll("%s The server is restarting.", MESSAGE_PREFIX);
 		return;
 	}
 	else if(StringToInt(time) < GetConVarInt(cvarTime)) 
