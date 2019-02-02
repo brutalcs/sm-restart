@@ -9,6 +9,8 @@ Handle cvarEnabled = INVALID_HANDLE;
 Handle cvarTime = INVALID_HANDLE;
 Handle cvarBackupTime = INVALID_HANDLE;
 
+float CheckInterval = 300.0;
+
 public Plugin myinfo = {
 	name = "Restart",
 	author = "B3none",
@@ -28,7 +30,7 @@ public void OnPluginStart()
 		ThrowError("The backup restart time cannot be less than the restart time.");
 	}
 
-	CreateTimer(300.0, CheckRestart, 0, TIMER_REPEAT);
+	CreateTimer(CheckInterval, CheckRestart, 0, TIMER_REPEAT);
 }
 
 public Action CheckRestart(Handle timer, bool ignore) 
@@ -53,6 +55,7 @@ public Action CheckRestart(Handle timer, bool ignore)
 		FormatTime(lastRestartDay, sizeof(lastRestartDay), "%j", lastRestart);
 	}
 
+	// If the server was restarted in the last day, return.
 	if(StrEqual(currentDay, lastRestartDay))
 	{
 		return;
@@ -61,11 +64,11 @@ public Action CheckRestart(Handle timer, bool ignore)
 	char time[8];
 	FormatTime(time, sizeof(time), "%H%M");
 
-	if(!IsServerEmpty() && StringToInt(time) == GetConVarInt(cvarBackupTime))
+	if(IsInRange(StringToInt(time), GetConVarInt(cvarBackupTime)))
 	{
 		PrintToChatAll("%s The server is restarting.", MESSAGE_PREFIX);
 	}
-	else if(StringToInt(time) != GetConVarInt(cvarTime)) 
+	else if(!IsServerEmpty() || IsInRange(StringToInt(time), GetConVarInt(cvarTime))) 
 	{
 		return;
 	}
@@ -74,7 +77,7 @@ public Action CheckRestart(Handle timer, bool ignore)
 	Handle file = OpenFile(path, "w");
 	bool written = false;
 
-	written = WriteFileString(file, "Don't touch this file", true);
+	written = WriteFileString(file, "Don't touch this file\nRuthless plug: https://github.com/b3none", true);
 
 	// Don't restart endlessly if we couldn't...
 	if(file == INVALID_HANDLE || !written)
@@ -102,6 +105,14 @@ void RestartServer()
 	// All good
 	LogMessage("Restarting...");
 	ServerCommand("_restart");
+}
+
+stock bool IsInRange(int CurrentTime, int ConVarTime)
+{
+	int Difference = CurrentTime - ConVarTime;
+	int Range = RoundFloat(CheckInterval) / 60;
+	
+	return Difference > 0 && Difference <= Range;
 }
 
 stock bool IsServerEmpty()
