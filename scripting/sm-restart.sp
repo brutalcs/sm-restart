@@ -13,7 +13,7 @@ public Plugin myinfo = {
 	name = "Restart",
 	author = "B3none",
 	description = "Restarts servers once a day when they empty.",
-	version = "1.1.2",
+	version = "1.1.3",
 	url = "https://github.com/b3none",
 }
 
@@ -65,7 +65,7 @@ public Action CheckRestart(Handle timer, bool ignore)
 	{
 		PrintToChatAll("%s The server is restarting.", MESSAGE_PREFIX);
 	}
-	else if(StringToInt(time) < GetConVarInt(cvarTime)) 
+	else if(StringToInt(time) != GetConVarInt(cvarTime)) 
 	{
 		return;
 	}
