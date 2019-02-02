@@ -47,9 +47,6 @@ public Action CheckRestart(Handle timer, bool ignore)
 
 	int lastRestart = GetFileTime(path, FileTime_LastChange);
 	char lastRestartDay[8] = "";
-	
-	PrintToChatAll("%i", lastRestart);
-	PrintToChatAll("%s", lastRestartDay);
 
 	if(lastRestart != -1)
 	{
@@ -58,7 +55,6 @@ public Action CheckRestart(Handle timer, bool ignore)
 
 	if(StrEqual(currentDay, lastRestartDay))
 	{
-		PrintToChatAll("The server not restarting because current day is the same as the last restart day.");
 		return;
 	}
 
@@ -67,17 +63,13 @@ public Action CheckRestart(Handle timer, bool ignore)
 
 	if(!IsServerEmpty() && StringToInt(time) == GetConVarInt(cvarBackupTime))
 	{
-		PrintToChatAll("Using backup time");
-		
 		PrintToChatAll("%s The server is restarting.", MESSAGE_PREFIX);
 	}
 	else if(StringToInt(time) < GetConVarInt(cvarTime)) 
 	{
-		PrintToChatAll("The server not restarting because current time is less than the set restart time.");
-		
 		return;
 	}
-
+	
 	// Touch autorestart.txt
 	Handle file = OpenFile(path, "w");
 	bool written = false;
