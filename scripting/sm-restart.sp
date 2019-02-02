@@ -15,15 +15,15 @@ public Plugin myinfo = {
 	name = "Restart",
 	author = "B3none",
 	description = "Restarts servers once a day when they empty.",
-	version = "1.2.0",
+	version = "1.2.1",
 	url = "https://github.com/b3none",
 }
 
 public void OnPluginStart() 
 {
-	cvarEnabled = CreateConVar("sm_autorestart", "1", "Enable AutoRestart.");
-	cvarTime = CreateConVar("sm_autorestart_time", "0500", "Time to restart server at.", _, true, 0.0, true, 2400.0);
-	cvarBackupTime = CreateConVar("sm_autorestart_time_backup", "1400", "Backup time to restart server at (Must be more than cvarTime).", _, true, 0.0, true, 2400.0);
+	cvarEnabled = CreateConVar("sm_restart_enabled", "1", "Enable AutoRestart.");
+	cvarTime = CreateConVar("sm_restart_time", "0500", "Time to restart server at.", _, true, 0.0, true, 2400.0);
+	cvarBackupTime = CreateConVar("sm_restart_time_backup", "1400", "Backup time to restart server at (Must be more than cvarTime).", _, true, 0.0, true, 2400.0);
 	
 	if(GetConVarInt(cvarBackupTime) < GetConVarInt(cvarTime))
 	{
@@ -63,6 +63,7 @@ public Action CheckRestart(Handle timer, bool ignore)
 
 	char time[8];
 	FormatTime(time, sizeof(time), "%H%M");
+
 	
 	if(IsInRange(StringToInt(time), GetConVarInt(cvarBackupTime)))
 	{
@@ -75,9 +76,7 @@ public Action CheckRestart(Handle timer, bool ignore)
 	
 	// Touch autorestart.txt
 	Handle file = OpenFile(path, "w");
-	bool written = false;
-
-	written = WriteFileString(file, "Don't touch this file\nRuthless plug: https://github.com/b3none", true);
+	bool written = WriteFileString(file, "Don't touch this file\nRuthless plug: https://github.com/b3none", true);
 
 	// Don't restart endlessly if we couldn't...
 	if(file == INVALID_HANDLE || !written)
