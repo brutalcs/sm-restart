@@ -63,7 +63,6 @@ public Action CheckRestart(Handle timer, bool ignore)
 
 	char time[8];
 	FormatTime(time, sizeof(time), "%H%M");
-
 	
 	if(IsInRange(StringToInt(time), GetConVarInt(cvarBackupTime)))
 	{
