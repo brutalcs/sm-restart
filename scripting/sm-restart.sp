@@ -15,7 +15,7 @@ public Plugin myinfo = {
 	name = "Restart",
 	author = "B3none",
 	description = "Restarts servers once a day when they empty.",
-	version = "1.1.3",
+	version = "1.2.0",
 	url = "https://github.com/b3none",
 }
 
@@ -67,7 +67,7 @@ public Action CheckRestart(Handle timer, bool ignore)
 	
 	if(IsInRange(StringToInt(time), GetConVarInt(cvarBackupTime)))
 	{
-		PrintToChatAll("%s The server is restarting.", MESSAGE_PREFIX);
+		PrintToChatAll("%s The server is restarting in the next minute.", MESSAGE_PREFIX);
 	}
 	else if(!IsServerEmpty() || !IsInRange(StringToInt(time), GetConVarInt(cvarTime))) 
 	{
@@ -90,10 +90,10 @@ public Action CheckRestart(Handle timer, bool ignore)
 	
 	delete file;
 
-	RestartServer();
+	CreateTimer(60.0, RestartServer);
 }
 
-void RestartServer()
+public Action RestartServer(Handle timer)
 {
 	for(int i = 1; i <= MaxClients; i++) 
 	{
